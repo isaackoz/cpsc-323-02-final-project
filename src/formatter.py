@@ -80,6 +80,13 @@ class FormatProgram:
             file.write(formatted_text)
 
 
-#Example usage
-formatter = FormatProgram('finalv1.txt')
-formatter.save_formatted_file()
+def main():
+    # Example usage
+    print("Formatting file...")
+    formatter = FormatProgram('./finalv1.txt')
+    formatter.save_formatted_file()
+    print("File successfully formatted and saved.")
+
+
+if __name__ == '__main__':
+    main()
