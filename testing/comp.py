@@ -61,7 +61,7 @@ def main():
 
     # Change directory as needed
     # Get the filename
-    filename = "C:\\Users\\baldo\\Desktop\\PyProjects\\comp3\\finalv1.txt"
+    filename = "./finalv1.txt"
 
     # Read the file
     try:
@@ -76,7 +76,7 @@ def main():
     cleaned = fixFile(lines)
 
     # Save the cleaned input
-    with open("finalf24.txt", "w") as file:
+    with open("./finalf24.txt", "w") as file:
         file.write("\n".join([" ".join(line) for line in cleaned]))
 
 
@@ -112,6 +112,8 @@ def main():
     if not valid:
         print("REJECTED: Invalid input")
         return
+    else:
+        print("Accepted!")
 
     # Generate the python program
     makePy("finalf24.py", variables, operations, progName)

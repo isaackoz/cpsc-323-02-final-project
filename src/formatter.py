@@ -76,10 +76,17 @@ class FormatProgram:
 
     def save_formatted_file(self):
         formatted_text = self.format_file()
-        with open('./output/' + self.filepath.replace('.txt', '_formatted.txt'), 'w', encoding='utf-8') as file:
+        with open('./output/' + 'formatted.txt', 'w', encoding='utf-8') as file:
             file.write(formatted_text)
 
 
-#Example usage
-formatter = FormatProgram('finalv1.txt')
-formatter.save_formatted_file()
+def main():
+    # Example usage
+    print("Formatting file...")
+    formatter = FormatProgram('./finalv1.txt')
+    formatter.save_formatted_file()
+    print("File successfully formatted and saved.")
+
+
+if __name__ == '__main__':
+    main()
