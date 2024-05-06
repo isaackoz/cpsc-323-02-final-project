@@ -20,33 +20,38 @@ A compiler in Python using Predictive Parsing (LL)
 ## Grammar
 Left-recursion and in BNF form.
 ```text
-<prog>              ->  program <identifier>; var <dec-list> begin <stat-list> end.
-<identifier>        ->  <letter><post-identifier>
-<post-identifier>   ->  <letter><post-identifier>
-<post-identifier>   ->  <digit><post-identifier>
+<prog>              ->  program <identifier> ; var <dec-list> begin <stat-list> end.
+<identifier>        ->  <letter> <post-identifier>
+<post-identifier>   ->  <letter> <post-identifier>
+<post-identifier>   ->  <digit> <post-identifier>
 <post-identifier>   ->  λ
-<dec-list>          ->  <dec>:<type>;
-<dec>               ->  <identifier>,<dec>
-<dec>               ->  <identifier>
+<dec-list>          ->  <dec> : <type> ;
+<dec>               ->  <identifier> <post-dec>
+<post-dec>          ->  , <dec>
+<post-dec>          ->  λ
 <type>              ->  integer
-<stat-list>         ->  <stat>
-<stat-list>         ->  <stat><stat-list>
+<stat-list>         ->  <stat> <post-stat-list>
+<post-stat-list>    ->  <stat> <post-stat-list>
+<post-stat-list>    ->  λ
 <stat>              ->  <write>
 <stat>              ->  <assign>
-<write>             ->  write(<str><identifier>);
-<str>               ->  "value=",
+<write>             ->  write ( <str> <identifier> );
+<str>               ->  "value=" ,
 <str>               ->  λ
-<assign>            ->  <identifier>=<expr>;
-<expr>              ->  <term><term'>
-<expr'>             ->  +<term><term'>
-<expr'>             ->  -<term><term'>
-<expr'>             ->  λ
-<term>              ->  <factor><term'>
-<term'>             ->  *<factor><term'>
-<term'>             ->  /<factor><term'>
-<term'>             ->  λ
-<number>            ->  <sign><digit><post-number>
-<post-number>       ->  <digit><post-number>
+<assign>            ->  <identifier> = <expr> ;
+<expr>              ->  <term> <post-expr>
+<post-expr>         ->  + <term> <post-expr>
+<post-expr>         ->  - <term> <post-expr>
+<post-expr>         ->  λ
+<term>              ->  <factor> <post-term>
+<post-term>         ->  * <factor> <post-term>
+<post-term>         ->  / <factor> <post-term>
+<post-term>         ->  λ
+<factor>            ->  <identifier>
+<factor>            ->  <number>
+<factor>            ->  ( <expr> )
+<number>            ->  <sign> <digit> <post-number>
+<post-number>       ->  <digit> <post-number>
 <post-number>       ->  λ
 <sign>              ->  +
 <sign>              ->  -
@@ -65,4 +70,58 @@ Left-recursion and in BNF form.
 <letter>            ->  q
 <letter>            ->  r
 <letter>            ->  s
+```
+
+## Grammar with short-hand letters for simplification
+```text
+S       ->  program A ; var C begin F end.
+A       ->  T B
+B       ->  T B
+B       ->  R B
+B       ->  λ
+C       ->  D : E ;
+D       ->  A V
+V       ->  , D
+V       ->  λ
+E       ->  integer
+F       ->  G W
+W       ->  G W
+W       ->  λ
+G       ->  H
+G       ->  J
+H       ->  write ( I A );
+I       ->  "value=" ,
+I       ->  λ
+J       ->  A = K ;
+K       ->  M L
+L       ->  + M L
+L       ->  - M L
+L       ->  λ
+M       ->  U N
+N       ->  * U N
+N       ->  / U N
+N       ->  λ
+U       ->  A
+U       ->  O
+U       ->  ( K )
+O       ->  Q R P
+P       ->  R P
+P       ->  λ
+Q       ->  +
+Q       ->  -
+Q       ->  λ
+R       ->  0
+R       ->  1
+R       ->  2
+R       ->  3
+R       ->  4
+R       ->  5
+R       ->  6
+R       ->  7
+R       ->  8
+R       ->  9
+T       ->  p
+T       ->  q
+T       ->  r
+T       ->  s
 ```

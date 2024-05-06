@@ -1,5 +1,5 @@
 from collections import defaultdict
-from typing import List
+from typing import List, Type
 from typing import Set
 
 # Define all the terminal values
@@ -8,32 +8,32 @@ terminals = [":", ";", "=", "+", "-", "*", "/", "(", ")", ",", '"value="', "$"]
 letter = "pqrs"
 
 # Define the transition table
-predParse = defaultdict(lambda: defaultdict(lambda: None))
-predParse["<prog>"]["program"] = ["program", "<indentifier>", ";", "var", "<dec-list>", "begin", "<stat-list>", "end."]
-predParse["<dec-list>"]["<indentifier>"] = ["<dec>", ":", "<type>", ";"]
-predParse["<dec>"]["<indentifier>"] = ["<indentifier>", "<dec-tail>"]
+predParse = defaultdict(lambda: defaultdict(lambda: Type[list[str]]))
+predParse["<prog>"]["program"] = ["program", "<identifier>", ";", "var", "<dec-list>", "begin", "<stat-list>", "end."]
+predParse["<dec-list>"]["<identifier>"] = ["<dec>", ":", "<type>", ";"]
+predParse["<dec>"]["<identifier>"] = ["<identifier>", "<dec-tail>"]
 predParse["<dec-tail>"][","] = [",", "<dec>"]
 predParse["<dec-tail>"][":"] = ["lambda"]
 predParse["<type>"]["integer"] = ["integer"]
 predParse["<stat-list>"]["write"] = ["<stat-action>", "<stat-list-tail>"]
-predParse["<stat-list>"]["<indentifier>"] = ["<stat-action>", "<stat-list-tail>"]
+predParse["<stat-list>"]["<identifier>"] = ["<stat-action>", "<stat-list-tail>"]
 predParse["<stat-list-tail>"]["end."] = ["lambda"]
 predParse["<stat-list-tail>"]["write"] = ["<stat-list>"]
-predParse["<stat-list-tail>"]["<indentifier>"] = ["<stat-list>"]
+predParse["<stat-list-tail>"]["<identifier>"] = ["<stat-list>"]
 predParse["<stat-action>"]["write"] = ["<write>"]
-predParse["<stat-action>"]["<indentifier>"] = ["<assign>"]
-predParse["<write>"]["write"] = ["write", "(", "<str>", "<indentifier>", ")", ";"]
-predParse["<str>"]["<indentifier>"] = ["lambda"]
+predParse["<stat-action>"]["<identifier>"] = ["<assign>"]
+predParse["<write>"]["write"] = ["write", "(", "<str>", "<identifier>", ")", ";"]
+predParse["<str>"]["<identifier>"] = ["lambda"]
 predParse["<str>"]['"value="'] = ['"value="', ","]
-predParse["<assign>"]["<indentifier>"] = ["<indentifier>", "=", "<expr>", ";"]
-predParse["<expr>"]["<indentifier>"] = ["<term>", "<expr-tail>"]
+predParse["<assign>"]["<identifier>"] = ["<identifier>", "=", "<expr>", ";"]
+predParse["<expr>"]["<identifier>"] = ["<term>", "<expr-tail>"]
 predParse["<expr>"]["<number>"] = ["<term>", "<expr-tail>"]
 predParse["<expr>"]["("] = ["<term>", "<expr-tail>"]
 predParse["<expr-tail>"][")"] = ["lambda"]
 predParse["<expr-tail>"]["+"] = ["+", "<term>", "<expr-tail>"]
 predParse["<expr-tail>"]["-"] = ["-", "<term>", "<expr-tail>"]
 predParse["<expr-tail>"][";"] = ["lambda"]
-predParse["<term>"]["<indentifier>"] = ["<factor>", "<term-tail>"]
+predParse["<term>"]["<identifier>"] = ["<factor>", "<term-tail>"]
 predParse["<term>"]["<number>"] = ["<factor>", "<term-tail>"]
 predParse["<term>"]["("] = ["<factor>", "<term-tail>"]
 predParse["<term-tail>"][")"] = ["lambda"]
@@ -42,7 +42,7 @@ predParse["<term-tail>"]["-"] = ["lambda"]
 predParse["<term-tail>"]["*"] = ["*", "<factor>", "<term-tail>"]
 predParse["<term-tail>"]["/"] = ["/", "<factor>", "<term-tail>"]
 predParse["<term-tail>"][";"] = ["lambda"]
-predParse["<factor>"]["<indentifier>"] = ["<indentifier>"]
+predParse["<factor>"]["<identifier>"] = ["<identifier>"]
 predParse["<factor>"]["<number>"] = ["<number>"]
 predParse["<factor>"]["("] = ["(", "<expr>", ")"]
 
@@ -124,7 +124,7 @@ def parseTok(tokens: List[str], identifiers: Set[str], numbers: Set[str], debug:
             elif inOp:
                 currentOp.append(currentTok)
 
-        if state == "<indentifier>":
+        if state == "<identifier>":
             if currentTok in identifiers:
                 if decMode:
                     decVars.append(currentTok)
@@ -165,7 +165,7 @@ def parseTok(tokens: List[str], identifiers: Set[str], numbers: Set[str], debug:
             continue
         else:
             if currentTok in identifiers:
-                parseTok = "<indentifier>"
+                parseTok = "<identifier>"
             elif currentTok in numbers:
                 parseTok = "<number>"
             else:
