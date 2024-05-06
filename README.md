@@ -15,7 +15,7 @@ A compiler in Python using Predictive Parsing (LL)
     1. `git checkout main`
     2. `git pull`
     3. `git checkout my-branch-name`
-    4. `git merge master`
+    4. `git merge main`
 
 ## Grammar
 Left-recursion and in BNF form.
