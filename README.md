@@ -16,3 +16,53 @@ A compiler in Python using Predictive Parsing (LL)
     2. `git pull`
     3. `git checkout my-branch-name`
     4. `git merge master`
+
+## Grammar
+Left-recursion and in BNF form.
+```text
+<prog>              ->  program <identifier>; var <dec-list> begin <stat-list> end.
+<identifier>        ->  <letter><post-identifier>
+<post-identifier>   ->  <letter><post-identifier>
+<post-identifier>   ->  <digit><post-identifier>
+<post-identifier>   ->  λ
+<dec-list>          ->  <dec>:<type>;
+<dec>               ->  <identifier>,<dec>
+<dec>               ->  <identifier>
+<type>              ->  integer
+<stat-list>         ->  <stat>
+<stat-list>         ->  <stat><stat-list>
+<stat>              ->  <write>
+<stat>              ->  <assign>
+<write>             ->  write(<str><identifier>);
+<str>               ->  "value=",
+<str>               ->  λ
+<assign>            ->  <identifier>=<expr>;
+<expr>              ->  <term><term'>
+<expr'>             ->  +<term><term'>
+<expr'>             ->  -<term><term'>
+<expr'>             ->  λ
+<term>              ->  <factor><term'>
+<term'>             ->  *<factor><term'>
+<term'>             ->  /<factor><term'>
+<term'>             ->  λ
+<number>            ->  <sign><digit><post-number>
+<post-number>       ->  <digit><post-number>
+<post-number>       ->  λ
+<sign>              ->  +
+<sign>              ->  -
+<sign>              ->  λ
+<digit>             ->  0
+<digit>             ->  1
+<digit>             ->  2
+<digit>             ->  3
+<digit>             ->  4
+<digit>             ->  5
+<digit>             ->  6
+<digit>             ->  7
+<digit>             ->  8
+<digit>             ->  9
+<letter>            ->  p
+<letter>            ->  q
+<letter>            ->  r
+<letter>            ->  s
+```

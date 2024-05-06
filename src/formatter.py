@@ -16,57 +16,63 @@ class FormatProgram:
         in_comment = False
         in_quotes = False
         quote_char = ''
-        previous_char = ''
+        processed_content = ''
 
         with open(self.filepath, 'r', encoding='utf-8') as file:
-            while True:
-                char = file.read(1)
-                if not char:
-                    break  # End of file
+            content = file.read()
 
-                # Check if entering or exiting quotes
-                if char in "\"'“”" and not in_comment:
-                    if in_quotes:
-                        if char == quote_char:
-                            in_quotes = False  # Closing quote
-                    else:
-                        in_quotes = True
-                        quote_char = char
-                    formatted_text += char
-                    continue
+        i = 0
+        terminals = {';', ':', '*', '+', '-', '/', '=', '(', ')', ','}
+        while i < len(content):
+            char = content[i]
 
-                # Handle comments
-                if char == '/' and not in_quotes:
-                    next_char = file.read(1)
-                    if next_char == '/':
-                        if not in_comment:
-                            in_comment = True
-                            # Skip until end of line or end comment sequence
-                            while True:
-                                temp_char = file.read(1)
-                                if temp_char == '\n':
-                                    in_comment = False
-                                    formatted_text += ' '  # To ensure newline is processed if needed
-                                    break
-                                if not temp_char:
-                                    break  # End of file
-                        continue
-                    else:
-                        formatted_text += char + next_char
-                        continue
-                elif in_comment:
-                    continue
-
-                # Normalize spaces
-                if char.isspace():
-                    if previous_char != ' ' and formatted_text and not formatted_text[-1].isspace():
-                        formatted_text += ' '
+            # Handle entering and exiting quotes
+            if char in "\"'“”":
+                if in_quotes:
+                    if char == quote_char:
+                        in_quotes = False  # Closing quote
+                    processed_content += char  # Add the closing quote character
                 else:
-                    formatted_text += char
+                    in_quotes = True
+                    quote_char = char  # Set the type of quote we're in
+                    processed_content += char  # Add the opening quote character
+                i += 1
+                continue
 
-                previous_char = char
+            if in_quotes:
+                processed_content += char  # Continue adding text inside quotes
+                i += 1
+                continue
 
-        return formatted_text
+            # Detect and manage comments
+            if char == '/' and not in_quotes and i + 1 < len(content) and content[i + 1] == '/':
+                if not in_comment:
+                    in_comment = True
+                else:
+                    in_comment = False
+                i += 2  # Skip both slashes
+                continue
+
+            if not in_comment:
+                if char in terminals:
+                    # Add space before and after the terminal if not at start or end of the line
+                    if processed_content and not processed_content.endswith(' '):
+                        processed_content += ' '
+                    processed_content += char
+                    if i + 1 < len(content) and content[i + 1] not in terminals and content[i + 1] != ' ':
+                        processed_content += ' '
+                else:
+                    processed_content += char
+
+            i += 1
+
+        # Split the processed content into lines and remove any empty lines
+        lines = processed_content.split('\n')
+        for line in lines:
+            if line.strip():  # Only add non-empty lines
+                formatted_text += line.strip() + '\n'
+
+        return formatted_text.strip()
 
     def save_formatted_file(self):
         formatted_text = self.format_file()
@@ -74,12 +80,6 @@ class FormatProgram:
             file.write(formatted_text)
 
 
-# Example usage
+#Example usage
 formatter = FormatProgram('finalv1.txt')
 formatter.save_formatted_file()
-
-# Todo: Create a class that will read the formatted file from FormatProgram and LL parse it (predictive parsing)
-
-# Todo: Create a class that will convert the formatted file to a .py file
-
-# Todo: Test the file and ensure it runs
