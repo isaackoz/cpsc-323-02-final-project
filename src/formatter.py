@@ -7,6 +7,9 @@ import re
 # 2. Remove all blank line(s)
 # 3. Extra spaces in each line must be removed, leave one space before and one after
 #     each token to make tokenization easier.
+
+
+reserve_words = ['program', 'var', 'begin', 'end.', 'integer', 'write']
 class FormatProgram:
     def __init__(self, filepath):
         self.filepath = filepath
@@ -76,14 +79,14 @@ class FormatProgram:
 
     def save_formatted_file(self):
         formatted_text = self.format_file()
-        with open('./output/' + 'formatted.txt', 'w', encoding='utf-8') as file:
+        with open('./output/' + 'final24.txt', 'w', encoding='utf-8') as file:
             file.write(formatted_text)
 
 
 def main():
     # Example usage
     print("Formatting file...")
-    formatter = FormatProgram('./finalv1.txt')
+    formatter = FormatProgram('input/finalv1.txt')
     formatter.save_formatted_file()
     print("File successfully formatted and saved.")
 
