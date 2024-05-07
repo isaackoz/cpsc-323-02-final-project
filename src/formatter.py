@@ -7,6 +7,9 @@ import re
 # 2. Remove all blank line(s)
 # 3. Extra spaces in each line must be removed, leave one space before and one after
 #     each token to make tokenization easier.
+
+
+reserve_words = ['program', 'var', 'begin', 'end.', 'integer', 'write']
 class FormatProgram:
     def __init__(self, filepath):
         self.filepath = filepath

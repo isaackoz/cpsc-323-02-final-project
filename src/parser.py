@@ -50,9 +50,13 @@ class Parser:
 
     def parse(self):
         self.current_token = self.lexer.next_token()
+        print(f"Initial Token: {self.current_token}")
         while self.stack:
+            print(f"Stack: {self.stack}")
             top = self.stack.pop()
-            if top == self.current_token.type or top == self.current_token.value:
+            print(f"Processing: {top}, Current Token: {self.current_token}")
+            if top == self.current_token.value or (
+                    top == self.current_token.type and self.current_token.type != 'KEYWORD'):
                 if top == 'EOF':
                     print("Parsing successful!")
                     return
@@ -60,10 +64,12 @@ class Parser:
             elif self.is_non_terminal(top):
                 self.handle_non_terminal(top)
             else:
-                raise Exception(f"Syntax error: unexpected token {self.current_token.type}.")
+                raise Exception(
+                    f"Syntax error: unexpected token {self.current_token.type} ({self.current_token.value}). Expected {top}")
 
     def handle_non_terminal(self, non_terminal):
-        key = (non_terminal, self.current_token.type)
+        # Use token value if the parsing table keys are set with token values (like 'program')
+        key = (non_terminal, self.current_token.value)
         if key in self.parse_table:
             rule = self.parse_table[key]
             if rule == []:
@@ -71,16 +77,18 @@ class Parser:
             for symbol in reversed(rule):
                 self.stack.append(symbol)
         else:
-            raise Exception(f"Syntax error: No rule for {non_terminal} with lookahead {self.current_token.type}.")
+            raise Exception(f"Syntax error: No rule for {non_terminal} with lookahead {self.current_token.value}.")
 
     def is_non_terminal(self, symbol):
-        # This method should return True if the symbol is a non-terminal
-        return symbol in self.parse_table  # This might need adjustment to check keys correctly.
+        # This method should return True if the symbol appears as a key in any tuple in the parse table.
+        return any(symbol == key[0] for key in self.parse_table.keys())
 
 
 
 if __name__ == "__main__":
     lexer = Lexer('./output/formatted.txt')
+    for token in lexer.tokens:  # Print all tokens to inspect them
+        print(token)
     parser = Parser(lexer)
     try:
         parser.parse()
