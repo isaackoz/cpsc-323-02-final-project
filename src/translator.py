@@ -1,17 +1,16 @@
-class ASTNode:
-    def __init__(self, type, children=None, leaf=None):
-        self.type = type
-        self.children = children if children is not None else []
-        self.leaf = leaf
+class CodeGenerator:
+    def __init__(self):
+        self.output_code = []
 
-class AssignmentNode(ASTNode):
-    def __init__(self, left, right):
-        super().__init__('Assignment', [left, right])
+    def add_code(self, code_line):
+        self.output_code.append(code_line)
 
-class VariableNode(ASTNode):
-    def __init__(self, name):
-        super().__init__('Variable', leaf=name)
+    def generate_code(self):
+        # Here you might add additional processing before writing to file
+        with open('./output/output.py', 'w') as f:
+            for line in self.output_code:
+                f.write(f"{line}\n")
 
-class NumberNode(ASTNode):
-    def __init__(self, value):
-        super().__init__('Number', leaf=value)
+    def print_code(self):
+        for line in self.output_code:
+            print(line)

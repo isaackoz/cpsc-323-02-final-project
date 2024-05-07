@@ -1,4 +1,5 @@
 from parseTable import parse_table
+from translator import CodeGenerator
 import re
 class Token:
     def __init__(self, type, value):
@@ -53,11 +54,16 @@ class Lexer:
     def reset(self):
         self.current_token_index = 0
 class Parser:
-    def __init__(self, lexer):
+    def __init__(self, lexer, code_gen):
         self.lexer = lexer
         self.current_token = None
+        self.code_generator = code_gen
         self.parse_table = parse_table
         self.stack = ['EOF', 'S']
+        self.token_buffer = []
+        self.inVar = False
+        self.inMain = False
+        self.inWrite = False
 
     def parse(self):
         self.current_token = self.lexer.next_token()
@@ -65,14 +71,48 @@ class Parser:
             top = self.stack.pop()
             if isinstance(top, str) and (top == self.current_token.value or top == self.current_token.type):
                 if top == 'EOF':
-                    print("Parsing successful!")
                     return
+                self.execute_actions(top, self.current_token)
                 self.current_token = self.lexer.next_token()
             elif self.is_non_terminal(top):
                 self.handle_non_terminal(top)
             else:
                 raise Exception(
                     f"Syntax error: unexpected token {self.current_token.type} ({self.current_token.value}). Expected {top}")
+
+    def execute_actions(self, top, token):
+        # Example: Add variable declaration to code generator
+        if token.type == "KEYWORD":
+            if token.value == "var":
+                self.inVar = True
+                return
+            elif token.value == "integer":
+                pass
+            elif token.value == "begin":
+                # If we are in the main code block, set isMain to true
+                self.inMain = True
+                return
+        if self.inVar:
+            if token.value == ':':
+                self.inVar = False
+                var_names = '='.join(''.join(self.token_buffer).split(','))
+                self.code_generator.add_code(f"{var_names} = 0")
+                self.token_buffer = []
+            else:
+                # If we're declaring variable, build the var buffer
+                self.token_buffer.append(top)
+        elif self.inMain:
+            if token.value == ';':
+                if self.inWrite:
+                    self.inWrite = False
+                statement = ''.join(self.token_buffer)
+                self.code_generator.add_code(statement)
+                self.token_buffer = []
+            elif token.value == 'write':
+                self.inWrite = True
+                self.token_buffer.append("print")
+            else:
+                self.token_buffer.append(token.value)
 
     def handle_non_terminal(self, non_terminal):
         key = (non_terminal, self.current_token.value)
@@ -86,7 +126,7 @@ class Parser:
             # Gather expected tokens for the current non-terminal from the parse table
             expected_tokens = []
             for k, v in self.parse_table.items():
-                if k[0] == non_terminal:  # Filter by the non-terminal part of the key
+                if k[0] == non_terminal:
                     expected_tokens.append(k[1])
 
             # If there are expected tokens, format them into a readable string
@@ -103,12 +143,12 @@ class Parser:
 
 
 if __name__ == "__main__":
-    lexer = Lexer('./output/formatted.txt')
-    for token in lexer.tokens:  # Print all tokens to inspect them
-        print(token)
-    parser = Parser(lexer)
+    my_lexer = Lexer('./output/formatted.txt')
+    code_gen = CodeGenerator()
+    parser = Parser(my_lexer, code_gen)
     try:
         parser.parse()
         print("Parsing completed successfully!")
+        code_gen.generate_code()
     except Exception as e:
         print(f"An error occurred during parsing: {e}")
